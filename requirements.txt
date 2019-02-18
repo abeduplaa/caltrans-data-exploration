@@ -1,0 +1,4 @@
+numpy
+configparser==3.7.1
+requests
+beautifulsoup4
