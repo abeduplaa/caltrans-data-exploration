@@ -5,7 +5,7 @@ class HTMLFile:
 
     def __init__(self, html_path, base_url='http://pems.dot.ca.gov'):
         with open(html_path) as fp:
-            self._soup = BeautifulSoup(fp)
+            self._soup = BeautifulSoup(fp, features="html.parser")
         self.base_url = base_url
 
     def create_links(self):
