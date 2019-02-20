@@ -1,5 +1,6 @@
 import pandas as pd
 
+#TODO: add in more functions, complete the processing framework
 
 data_columns = ['timestamp',
                 'station',
