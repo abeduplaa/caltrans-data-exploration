@@ -2,3 +2,6 @@ numpy
 configparser==3.7.1
 requests
 beautifulsoup4
+pandas
+pymapd
+pyarrow
