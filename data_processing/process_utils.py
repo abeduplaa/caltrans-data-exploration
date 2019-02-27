@@ -101,21 +101,20 @@ def apply_transformations(df, interest_col, threshold, grouper):
     return df
 
 
-def get_file_names(csv_path):
+def get_file_names(csv_path, extension):
 
-    file_paths = [os.path.join(csv_path, f) for f in os.listdir(csv_path) if os.path.isfile(os.path.join(csv_path, f))]
-
+    file_paths = [os.path.join(csv_path, f) for f in os.listdir(csv_path) if (os.path.isfile(os.path.join(csv_path, f)) & (os.path.splitext(f)[1] == extension))]
     return file_paths
 
 
-def load_dfs(data_paths, meta_path, limit, data_columns, meta_columns, con, table_name, grouper='station',threshold=0.1, interest_col='speed'):
+def load_dfs(data_paths, meta_path, limit, data_columns, meta_columns, con, table_name, grouper='station', threshold=0.1, interest_col='speed'):
 
     no_data_cols = list(range(len(data_columns)))
 
     meta_df = pd.read_csv(meta_path, sep='\t', usecols=meta_columns).set_index('ID')
 
     for i in range(0, len(data_paths), limit):
-        df_0 =[]
+        df_0 = []
         for f in data_paths[i:i + limit]:
             print(f)
             df_temp = pd.read_csv(f, header=None, names=data_columns, usecols=no_data_cols)
@@ -134,7 +133,7 @@ def load_dfs(data_paths, meta_path, limit, data_columns, meta_columns, con, tabl
         ready_df = apply_transformations(df=joined_df, interest_col=interest_col, threshold=threshold, grouper=grouper)
 
         if i == 0:
-            create = True
+            create = 'infer'
         else:
             create = False
 

@@ -39,7 +39,7 @@ if __name__ == "__main__":
     threshold = 0.1
     interest_col = 'speed'
     grouper = 'station'
-    limit = 20
+    limit = 1
 
     config = ConfigParser()
     config.read(config_path)
@@ -48,7 +48,8 @@ if __name__ == "__main__":
     meta_path = config.get('Paths', 'meta_path')
 
     # get file paths:
-    file_paths = get_file_names(csv_files)
+    ext = '.txt'
+    file_paths = get_file_names(csv_files, extension=ext)
 
     print("Number of files found: ", len(file_paths))
 
@@ -69,7 +70,7 @@ if __name__ == "__main__":
              grouper=grouper,
              threshold=threshold,
              interest_col='speed',
-             table_name='January_to_midFeb')
+             table_name='text_enc_test')
 
 
 
