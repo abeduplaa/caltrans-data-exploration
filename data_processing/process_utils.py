@@ -49,7 +49,7 @@ def start_from_0(s):
 
 def downcast_type(df):
 
-    # TODO: find out why mapd won't accept int8!
+    # pymapd does not allow int8 to be sent! had to add in line to upcast int8 to int16
     for col in df:
 
         if df[col].dtype == int:
@@ -107,7 +107,8 @@ def get_file_names(csv_path, extension):
     return file_paths
 
 
-def load_dfs(data_paths, meta_path, limit, data_columns, meta_columns, con, table_name, grouper='station', threshold=0.1, interest_col='speed'):
+def transform_and_load(data_paths, meta_path, limit, data_columns, meta_columns, con, table_name,
+             grouper='station', threshold=0.1, interest_col='speed'):
 
     no_data_cols = list(range(len(data_columns)))
 
@@ -122,14 +123,11 @@ def load_dfs(data_paths, meta_path, limit, data_columns, meta_columns, con, tabl
 
         data_df = pd.concat(df_0, ignore_index=True)
 
-        # data_df = pd.concat(
-        #    [pd.read_csv(f, header=None, names=data_columns, usecols=no_data_cols) for f in data_paths[i:i+limit]]
-        #    , ignore_index=True)
-
         data_df = data_df.drop('district', axis=1)
 
         joined_df = data_df.join(meta_df, on='station')
 
+        print("applying transformations to data")
         ready_df = apply_transformations(df=joined_df, interest_col=interest_col, threshold=threshold, grouper=grouper)
 
         if i == 0:

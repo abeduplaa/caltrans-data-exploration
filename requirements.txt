@@ -1,7 +1,8 @@
 numpy
+pandas==0.23.4
 configparser==3.7.1
+pymapd==0.7.1
+pyarrow==0.11
 requests
 beautifulsoup4
-pandas
-pymapd
-pyarrow
+darkskylib
