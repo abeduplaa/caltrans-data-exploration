@@ -1,5 +1,5 @@
-from weather_tool.Weather import Weather
-from weather_tool.City import City
+from darksky_weather_tool.Weather import Weather
+from darksky_weather_tool.City import City
 from configparser import ConfigParser
 from omnisci_connector.omni_connect import OmnisciConnect
 
@@ -19,7 +19,7 @@ if __name__ == "__main__":
     state_name = 'California'
 
     start_date = datetime.datetime(2019, 1, 1)
-    end_date = datetime.datetime(2019, 1, 10)
+    end_date = datetime.datetime(2019, 2, 18)
 
     config = ConfigParser()
     config.read(config_path)
@@ -33,12 +33,12 @@ if __name__ == "__main__":
     weather_forecast = forecast_handle.get_hourly_weather(sanfran, start_date, end_date, True)
 
     # Define info for omnisci
-    table_name = "weather_test"
+    table_name = "SanFrancisco_Weather_JanFeb"
 
     # todo: this column renaming is temporary. remove this once check function is in place
     weather_forecast = weather_forecast.rename(index=str, columns={'time': 'time_'})
 
     connection = OmnisciConnect(config_path)
-    connection.connect()
+    connection.start_connection()
     connection.load_data(table_name=table_name, df=weather_forecast,method='infer', create='infer')
-
+    connection.close_connection()

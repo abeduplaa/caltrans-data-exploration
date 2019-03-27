@@ -1,85 +1,255 @@
-import pymapd
 from configparser import ConfigParser
 import sys
+import pandas as pd
 
-from data_processing.process_utils import get_file_names, transform_and_load
+import data_processing.process_utils as utils
+from omnisci_connector.omni_connect import OmnisciConnect
+from noaa_weather_tool.noaa_api_v2 import NOAAData
+
+
+def apply_custom_transformations(df, interest_col, threshold, grouper):
+
+    df = utils.grouped_drop_na(df, threshold, grouper=grouper, col=interest_col)
+
+    df = utils.lower_col_names(df)
+
+    df['state_pm'] = utils.state_pm_to_numeric(df['state_pm'])
+
+    # df['station'] = start_from_0(df['station'])
+
+    df = df.dropna(subset=['abs_pm'])
+
+    df = utils.downcast_type(df)
+
+    df = utils.downcast_int(df, ['lanes', 'county'])
+
+    df['timestamp_'] = pd.to_datetime(df['timestamp_'], infer_datetime_format=True)
+
+    df = utils.add_day_of_week(df, 'timestamp_')
+
+    return df
+
+
+def using_reset_index(df):
+    df = df.reset_index(level=0)
+    return df.groupby('STATION').resample('60min').max()
+
 
 
 if __name__ == "__main__":
+    send_weather = True
+    send_traffic = False
+
+    traffic_table_name = "traffic_test4_encoded_strkey"
+    weather_table_name = "ncdc_weather_janfeb_dictstrkey"
 
     if len(sys.argv) != 2:
         print(len(sys.argv))
         raise TypeError("ERROR: need to provide path to config file.")
 
+    # Configuration file reader
     config_path = sys.argv[1]
+    config = ConfigParser()
+    config.read(config_path)
+    print("Config file read.")
 
-    data_columns = ['timestamp_',
-                    'station',
-                    'district',
-                    'freeway',
-                    'direction',
-                    'lane_type',
-                    'station_length',
-                    'samples',
-                    'pct_observed',
-                    'total_flow',
-                    'occupancy',
-                    'speed'
-                    ]
+    # traffic information for loading in data
+    traffic_data_columns = ['timestamp_',
+                            'station',
+                            'district',
+                            'freeway',
+                            'direction',
+                            'lane_type',
+                            'station_length',
+                            'samples',
+                            'pct_observed',
+                            'total_flow',
+                            'occupancy',
+                            'speed'
+                            ]
 
-    meta_columns = ['ID',
-                    'County',
-                    'State_PM',
-                    'Abs_PM',
-                    'Latitude',
-                    'Longitude',
-                    'Lanes',
-                    'Name']
+    traffic_meta_columns = ['ID',
+                            'County',
+                            'State_PM',
+                            'Abs_PM',
+                            'Latitude',
+                            'Longitude',
+                            'Lanes',
+                            'Name']
 
+    # weather information for loading in data
+    weather_counties = ['Alameda County',
+                        'Contra Costa County',
+                        'Marin County',
+                        'Napa County',
+                        'San Benito County',
+                        'San Francisco County',
+                        'San Mateo County',
+                        'Santa Clara County',
+                        'Santa Cruz County',
+                        'Solano County',
+                        'Sonoma County'
+                        ]
+
+    weather_state = 'CA'
+
+    weather_startdate = '2019-01-01'
+    weather_enddate = '2019-02-20'
+    weather_dataset = 'LCD'
+
+    # initial parameters for reading in traffic data
     threshold = 0.1
     interest_col = 'speed'
     grouper = 'station'
-    limit = 1
+    batch_limit = 1
     file_ext = '.txt'
 
-    config = ConfigParser()
-    config.read(config_path)
+    ### metadata section ###
+    traffic_meta_path = config.get('Paths', 'meta_path')
+
+    # read in the traffic metadata to pandas:
+    df_traffic_metadata = pd.read_csv(traffic_meta_path, sep='\t', usecols=traffic_meta_columns).set_index('ID')
+    df_traffic_metadata = df_traffic_metadata.rename(str.lower, axis='columns')
+    print("traffic metadata file read.")
+
+    # Weather metadata section
+
+    token = config.get('NCDC', 'key')
+
+    ncdc = NOAAData(token)
+
+    weather_locations = ncdc.locations(datasetid='LCD',
+                                       locationcategoryid='CNTY',
+                                       startdate=weather_startdate,
+                                       enddate=weather_enddate,
+                                       limit=1000
+                                       )
+
+    df_ncdc_locations = pd.DataFrame(weather_locations['results'])
+
+    df_ncdc_locations = df_ncdc_locations.join(pd.DataFrame(df_ncdc_locations['name'].str.split(', ', ).tolist(),
+                                                            columns=['county', 'state']))
+
+    location_ids = df_ncdc_locations.loc[(df_ncdc_locations['county'].isin(weather_counties)) &
+                                         (df_ncdc_locations['state'] == 'CA')]['id']
+
+    stations = []
+    for w_id in location_ids:
+        fetch_stations = ncdc.stations(datasetid='LCD',
+                                    limit=1000,
+                                    locationid=w_id,
+                                    startdate=weather_startdate,
+                                    enddate=weather_enddate,
+                                    )
+        stations.append(fetch_stations['results'])
+    stations = [item for sublist in stations for item in sublist]
+
+    df_weather_metadata = pd.DataFrame(stations)
+    df_weather_metadata = df_weather_metadata.rename(str.lower, axis='columns')
+    df_weather_metadata['weather_id'] = df_weather_metadata['id'].str.split(':').str[1]
+
+    # calculate distance between weather stations and traffic stations.
+    # then add column to traffic metadata to know which weather station corresponds to traffic station
+    weather_station_id = 'weather_station_id'
+    df_traffic_metadata[weather_station_id] = utils.calculate_longlat_distance(df_traffic_metadata,
+                                                                                 df_weather_metadata,
+                                                                                 'weather_id')
+
+    df_traffic_metadata[weather_station_id] = pd.to_numeric(df_traffic_metadata[weather_station_id])
+    print(df_traffic_metadata.dtypes)
+    print(df_traffic_metadata.isna().sum())
+    print("weather metadata file read.")
+
+    # Extract weather data
+    ncdc_data_path = config.get('Paths', 'ncdc_data_path')
+    raw_weather_data = pd.read_csv(ncdc_data_path, low_memory=False)
+
+    weather_hourly_columns = [col for col in raw_weather_data if col.startswith('Hourly')]
+    weather_hourly_columns.append('STATION')
+    weather_hourly_columns.append('DATE')
+
+    raw_weather_data['timestamp_'] = pd.to_datetime(raw_weather_data['DATE'])
+
+    raw_weather_data = raw_weather_data.set_index(['STATION', 'timestamp_'])
+
+    weather_hourly_columns.remove('DATE')
+    weather_hourly_columns.remove('STATION')
+    weather_hourly_columns.remove('HourlyPresentWeatherType')
+    weather_hourly_columns.remove('HourlySkyConditions')
+
+    raw_weather_data = raw_weather_data[weather_hourly_columns]
+
+    for col in weather_hourly_columns:
+        raw_weather_data[col] = pd.to_numeric(raw_weather_data[col], errors='coerce')
+
+    weather_data = raw_weather_data.fillna(0)
+
+    weather_data = using_reset_index(weather_data)
+
+    weather_data[weather_station_id] = weather_data['STATION'].str[-5:]
+    weather_data = weather_data.drop(columns='STATION')
+    weather_data = weather_data.reset_index(level=0)
+    #weather_data[weather_station_id] = weather_data['STATION'].str[-5:]
+    weather_data = weather_data.loc[weather_startdate:weather_enddate]
+    weather_data = raw_weather_data.fillna(0)
+    weather_data = weather_data.reset_index()
+    weather_data = weather_data.rename(str.lower, axis='columns')
+    print("weather data extracted and transformed.")
+
+    ### Traffic Section ###
 
     # get the paths of relevant files for the data
     csv_files = config.get('Paths', 'data_path')
-    meta_path = config.get('Paths', 'meta_path')
 
-    # get OmniSci login information from config file
-    user = config.get('OmniSci-Connection', 'user')
-    password = config.get('OmniSci-Connection', 'password')
-    dbname = config.get('OmniSci-Connection', 'dbname')
-    host = config.get('OmniSci-Connection', 'host')
-    port = config.get('OmniSci-Connection', 'port')
-    protocol = config.get('OmniSci-Connection', 'protocol')
+    # # Send data to omnisci:
+    print("connect to omnisci")
+    connection = OmnisciConnect(config_path)
+    connection.start_connection()
 
-    # get file paths:
-    file_paths = get_file_names(csv_files, extension=file_ext)
+    # send weather data
+    if send_weather:
+        print("sending weather data to omnisci")
+        weather_data[weather_station_id] = weather_data['station'].str[-5:]
+        #weather_data[weather_station_id] = pd.to_numeric(weather_data[weather_station_id])
+        print(weather_data.dtypes)
+        connection.load_data(table_name=weather_table_name, df=weather_data, method='infer', create='infer')
 
-    print("Number of files found: ", len(file_paths))
+    if send_traffic:
+        # get file paths:
+        file_paths = utils.get_file_names(csv_files, extension=file_ext)
+        print("Number of traffic files found: ", len(file_paths))
 
-    # connect to OmniSci:
-    con = pymapd.connect(user=user,
-                         password=password,
-                         dbname=dbname,
-                         host=host,
-                         port=port,
-                         protocol=protocol)
+        # extract and traffic data in batches:
+        no_data_cols = list(range(len(traffic_data_columns)))
+        for i in range(0, len(file_paths), batch_limit):
+        #for i in range(0, batch_limit, batch_limit):
+            df_batch = []
+            for f in file_paths[i:i + batch_limit]:
+                temp = pd.read_csv(f, header=None, names=traffic_data_columns, usecols=no_data_cols)
+                df_batch.append(temp)
 
-    transform_and_load(data_paths=file_paths,
-                       meta_path=meta_path,
-                       limit=limit,
-                       data_columns=data_columns,
-                       meta_columns=meta_columns,
-                       con=con,
-                       grouper=grouper,
-                       threshold=threshold,
-                       interest_col='speed',
-                       table_name='text_enc_test')
+            df_extracted_traffic = pd.concat(df_batch, ignore_index=True)
 
-    con.close()
+            df_extracted_traffic = df_extracted_traffic.drop('district', axis=1)
 
+            df_extracted_traffic = df_extracted_traffic.join(df_traffic_metadata, on='station')
+            # df_extracted_traffic[weather_station_id] = df_extracted_traffic[weather_station_id].astype(int)
+
+            print("applying transformations to traffic data")
+            df_transformed_traffic = apply_custom_transformations(df=df_extracted_traffic,
+                                                              interest_col=interest_col,
+                                                              threshold=threshold,
+                                                              grouper=grouper)
+
+            #print(df_transformed_traffic.isna().sum())
+            df_transformed_traffic[weather_station_id] = df_transformed_traffic[weather_station_id].astype(int)
+            df_transformed_traffic[weather_station_id] = df_transformed_traffic[weather_station_id].astype(str)
+            print(df_transformed_traffic.dtypes)
+            print(df_transformed_traffic.isna().sum())
+            connection.load_data(table_name=traffic_table_name, df=df_transformed_traffic, method='infer', create='infer')
+
+    connection.close_connection()
+
+    # df_transformed_traffic = df_transformed_traffic.join(weather_data, on=weather_station_id)
+    # df_traffic_weather = pd.merge(df_transformed_traffic,weather_data,on=weather_station_id)
+    # weather_data[weather_station_id] = weather_data['STATION'].str[-5:]

@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import os
+from geopy.distance import vincenty
 
 
 def grouped_drop_na(df, threshold, grouper, col):
@@ -33,7 +34,7 @@ def lower_col_names(df):
     return df
 
 
-def convert_state_pm(s):
+def state_pm_to_numeric(s):
     s = s.astype(str)
     s = [x.strip('R') for x in s]
     s = pd.to_numeric(s, errors='coerce')
@@ -54,7 +55,7 @@ def downcast_type(df):
 
         if df[col].dtype == int:
             df[col] = pd.to_numeric(df[col], downcast='integer')
-            df[col] = df[col].astype(np.int16)
+            df[col] = df[col].astype(np.int16) # upcast because of pymapd issue
         elif df[col].dtype == float:
             df[col] = pd.to_numeric(df[col], downcast='float')
 
@@ -64,7 +65,7 @@ def downcast_type(df):
 def downcast_int(df, cols):
     for col in cols:
         df[col] = pd.to_numeric(df[col], downcast='integer')
-        df[col] = df[col].astype(np.int16)
+        df[col] = df[col].astype(np.int16) # upcast because of pymapd issue
     return df
 
 
@@ -84,9 +85,9 @@ def apply_transformations(df, interest_col, threshold, grouper):
 
     df = lower_col_names(df)
 
-    df['state_pm'] = convert_state_pm(df['state_pm'])
+    df['state_pm'] = state_pm_to_numeric(df['state_pm'])
 
-    df['station'] = start_from_0(df['station'])
+    # df['station'] = start_from_0(df['station'])
 
     df = df.dropna(subset=['abs_pm'])
 
@@ -107,33 +108,28 @@ def get_file_names(csv_path, extension):
     return file_paths
 
 
-def transform_and_load(data_paths, meta_path, limit, data_columns, meta_columns, con, table_name,
-             grouper='station', threshold=0.1, interest_col='speed'):
+def calculate_longlat_distance(df1, df2, key_col):
+    """
+    Calculates the distance between two longitude and latitude dataframe columns
+    :param df1:
+    :param df2:
+    :param key_col: the column with the id
+    :return: list containing the id which is closest for each row of df1
+    """
+    df1 = df1.rename(str.lower, axis='columns')
+    df2 = df2.rename(str.lower, axis='columns')
+    labels = []
+    for i in df1.index:
+        for j in df2.index:
+            temp_distance = vincenty((df1['latitude'].loc[i], df1['longitude'].loc[i]),
+                                                    (df2['latitude'].loc[j], df2['longitude'].loc[j]))
 
-    no_data_cols = list(range(len(data_columns)))
+            if j == df2.index[0]:
+                closest = temp_distance
+            elif temp_distance < closest:
+                closest = temp_distance
+                idx = j
 
-    meta_df = pd.read_csv(meta_path, sep='\t', usecols=meta_columns).set_index('ID')
+        labels.append(df2[key_col].loc[idx])
 
-    for i in range(0, len(data_paths), limit):
-        df_0 = []
-        for f in data_paths[i:i + limit]:
-            print(f)
-            df_temp = pd.read_csv(f, header=None, names=data_columns, usecols=no_data_cols)
-            df_0.append(df_temp)
-
-        data_df = pd.concat(df_0, ignore_index=True)
-
-        data_df = data_df.drop('district', axis=1)
-
-        joined_df = data_df.join(meta_df, on='station')
-
-        print("applying transformations to data")
-        ready_df = apply_transformations(df=joined_df, interest_col=interest_col, threshold=threshold, grouper=grouper)
-
-        if i == 0:
-            create = 'infer'
-        else:
-            create = False
-
-        print("loading data to omnisci")
-        con.load_table(table_name, ready_df, method='infer', create=create)
+    return labels

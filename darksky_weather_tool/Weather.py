@@ -4,7 +4,6 @@ import darksky
 import pandas as pd
 
 
-
 class Weather:
     def __init__(self, key):
         self.key = key
