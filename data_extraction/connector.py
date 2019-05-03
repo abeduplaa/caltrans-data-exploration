@@ -9,11 +9,10 @@ class Connector:
 
         self.url_base = url_base
         self.connect_config = login
-        self.url_base = url_base
         self._test_connection()
 
     def _test_connection(self):
-        # add test her to make sure connection worked.
+        # add tester to make sure connection worked.
         pass
 
     def start_connection(self):

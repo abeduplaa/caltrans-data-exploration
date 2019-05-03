@@ -6,3 +6,5 @@ pyarrow==0.11
 requests
 beautifulsoup4
 darkskylib
+geopy
+noaa-sdk
