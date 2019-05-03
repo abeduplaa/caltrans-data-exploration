@@ -2,7 +2,7 @@
 # TODO: add in way to download html file
 # TODO: finish error handling
 # import logging
-from connector import Connector
+from .connector import Connector
 
 
 class ClearinghouseRepository:

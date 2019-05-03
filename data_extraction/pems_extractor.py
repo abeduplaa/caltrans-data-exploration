@@ -1,8 +1,8 @@
 import sys
 from configparser import ConfigParser
 
-from clearinghouse_repository import ClearinghouseRepository
-from html_parser import HTMLFile
+from .clearinghouse_repository import ClearinghouseRepository
+from .html_parser import HTMLFile
 
 
 class PemsExtractor:
