@@ -47,7 +47,7 @@ class OmnisciConnect:
             for b in bools:
                 new_cols[cols[b]] = cols[b]+'_'
 
-            df = df.rename(new_cols,axis='columns')
+            df = df.rename(new_cols, axis='columns')
             print(df.dtypes)
             #raise ReservedWordsException("name of column in dataframe is same as omnisci reserved words")
 
@@ -80,6 +80,7 @@ class OmnisciConnect:
         print("loading data to omnisci.")
         self.con.load_table(table_name, df, method=method, create=create)
         print("successfully loaded data to omnisci.")
+
     def close_connection(self):
         self.con.close()
         print("connection closed.")

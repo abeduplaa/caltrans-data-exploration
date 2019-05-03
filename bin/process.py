@@ -19,13 +19,23 @@ def apply_custom_transformations(df, interest_col, threshold, grouper):
 
     df = df.dropna(subset=['abs_pm'])
 
-    df = utils.downcast_type(df)
-
-    df = utils.downcast_int(df, ['lanes', 'county'])
-
     df['timestamp_'] = pd.to_datetime(df['timestamp_'], infer_datetime_format=True)
 
+    df = utils.grouped_resample(df, ['station', 'direction'], '1H', 'timestamp_')
+
+    df = df.drop('station', axis=1)
+
+    df = df.reset_index()
+
     df = utils.add_day_of_week(df, 'timestamp_')
+
+    df['hour_of_day'] = df['timestamp_'].dt.hour
+
+    df['day_of_year'] = df['timestamp_'].dt.dayofyear
+
+    df = utils.downcast_int(df, ['station', 'freeway', 'samples', 'total_flow', 'lanes', 'county'])
+
+    df = utils.downcast_type(df)
 
     return df
 
@@ -48,7 +58,7 @@ if __name__ == "__main__":
     send_meta_traffic = False
     send_meta_weather = False
 
-    traffic_table_name = "weather_traffic_janfeb_joined"
+    traffic_table_name = "joined_traffic_weather_janfeb_correcttypes"
     weather_table_name = "ncdc_weather_janfeb_dictstrkey_test"
 
     traffic_meta_table_name = "caltrans_traffic_janfeb_d07_metatable"
@@ -236,16 +246,15 @@ if __name__ == "__main__":
         print(weather_data.dtypes)
         connection.load_data(table_name=weather_table_name, df=weather_data, method='infer', create='infer')
 
+    ts_join = 'timestamp_rounded'
     if send_joined:
         weather_data[weather_station_id] = weather_data['station'].str[-5:]
-        #weather_data = weather_data.rename(index=str, columns={"station": weather_station_id})
-        #weather_data = utils.downcast_type(weather_data)
-        print(weather_data.dtypes)
+        # weather_data = weather_data.rename(index=str, columns={"station": weather_station_id})
+        # weather_data = utils.downcast_type(weather_data)
 
-        ts_rounded = 'timestamp_rounded'
-        print(weather_data[weather_station_id].head())
-        join_key = [weather_station_id, ts_rounded]
-        weather_data = add_rounded_hour_column(weather_data, name_rounded_ts=ts_rounded)
+        join_key = [weather_station_id, ts_join]
+        weather_data = utils.downcast_type(weather_data)
+        weather_data = add_rounded_hour_column(weather_data, name_rounded_ts=ts_join)
         grouped_weather_data = weather_data.groupby(join_key).mean()
         grouped_weather_data = grouped_weather_data.reset_index()
 
@@ -261,6 +270,7 @@ if __name__ == "__main__":
         #for i in range(0, batch_limit, batch_limit):
             df_batch = []
             for f in file_paths[i:i + batch_limit]:
+                print("Processing file: ", f)
                 temp = pd.read_csv(f, header=None, names=traffic_data_columns, usecols=no_data_cols)
                 df_batch.append(temp)
 
@@ -280,7 +290,8 @@ if __name__ == "__main__":
             df_transformed_traffic[weather_station_id] = df_transformed_traffic[weather_station_id].astype(str)
 
             if send_joined:
-                df_transformed_traffic = add_rounded_hour_column(df_transformed_traffic, name_rounded_ts=ts_rounded)
+                # df_transformed_traffic = add_rounded_hour_column(df_transformed_traffic, name_rounded_ts=ts_join)
+                df_transformed_traffic[ts_join] = df_transformed_traffic['timestamp_']
                 df_transformed_traffic[weather_station_id] = df_transformed_traffic[weather_station_id].astype(str)
                 df_transformed_traffic = pd.merge(left=df_transformed_traffic,
                                                   right=grouped_weather_data,

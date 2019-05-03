@@ -28,6 +28,13 @@ def grouped_fill_na(df, grouper, method=None):
     return transformed
 
 
+def grouped_resample(df, grouper, sample_size, time_col):
+
+    grouped = df.groupby(grouper).resample(sample_size, on=time_col).mean()
+
+    return grouped
+
+
 def lower_col_names(df):
     df = df.rename(str.lower, axis='columns')
 
@@ -76,6 +83,7 @@ def get_na(df):
 def add_day_of_week(df, timestamp_col):
 
     df['day_of_week'] = df[timestamp_col].dt.day_name()
+    df['day_of_week_num'] = df[timestamp_col].dt.dayofweek
     return df
 
 

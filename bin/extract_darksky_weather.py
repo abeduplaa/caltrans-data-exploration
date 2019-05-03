@@ -7,6 +7,19 @@ import datetime
 import sys
 
 
+#INPUTS:
+city_name = 'San Francisco'
+state_name = 'California'
+
+start_date = datetime.datetime(2019, 1, 1)
+end_date = datetime.datetime(2019, 2, 18)
+
+to_omnisci = False
+
+if to_omnisci:
+    table_name = "SanFrancisco_Weather_JanFeb"
+
+
 if __name__ == "__main__":
 
     if len(sys.argv) != 2:
@@ -15,30 +28,22 @@ if __name__ == "__main__":
 
     config_path = sys.argv[1]
 
-    city_name = 'San Francisco'
-    state_name = 'California'
-
-    start_date = datetime.datetime(2019, 1, 1)
-    end_date = datetime.datetime(2019, 2, 18)
-
     config = ConfigParser()
     config.read(config_path)
 
     api_key = config.get('Darksky', 'key')
 
-    sanfran = City('San Francisco', 'California')
+    city = City(city_name, state_name)
 
     forecast_handle = Weather(api_key)
 
-    weather_forecast = forecast_handle.get_hourly_weather(sanfran, start_date, end_date, True)
+    weather_forecast = forecast_handle.get_hourly_weather(city, start_date, end_date, True)
 
-    # Define info for omnisci
-    table_name = "SanFrancisco_Weather_JanFeb"
-
-    # todo: this column renaming is temporary. remove this once check function is in place
-    weather_forecast = weather_forecast.rename(index=str, columns={'time': 'time_'})
-
-    connection = OmnisciConnect(config_path)
-    connection.start_connection()
-    connection.load_data(table_name=table_name, df=weather_forecast,method='infer', create='infer')
-    connection.close_connection()
+    if to_omnisci:
+        connection = OmnisciConnect(config_path)
+        connection.start_connection()
+        connection.load_data(table_name=table_name,
+                             df=weather_forecast,
+                             method='infer',
+                             create='infer')
+        connection.close_connection()
