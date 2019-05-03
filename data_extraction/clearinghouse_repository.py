@@ -41,6 +41,7 @@ class ClearinghouseRepository:
     def extract_files(self, in_path):
         out_path = os.path.splitext(in_path)[0]
         gunzip(in_path, out_path)
+        os.remove(in_path)
 
     def download_files(self, links, out_path):
         """
