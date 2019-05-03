@@ -2,8 +2,21 @@
 # TODO: add in way to download html file
 # TODO: finish error handling
 # import logging
+import gzip
+import os
 from .connector import Connector
 
+
+def gunzip(source_filepath, dest_filepath, block_size=65536):
+    with gzip.open(source_filepath, 'rb') as s_file, \
+            open(dest_filepath, 'wb') as d_file:
+        while True:
+            block = s_file.read(block_size)
+            if not block:
+                break
+            else:
+                d_file.write(block)
+        d_file.write(block)
 
 class ClearinghouseRepository:
     def __init__(self, authorization):
@@ -18,9 +31,16 @@ class ClearinghouseRepository:
 
         print("Written File: ", file_name)
 
+        return out_path+file_name
+
+
     def download_html_file(self):
         print("not yet implmemented")
         pass
+
+    def extract_files(self, in_path):
+        out_path = os.path.splitext(in_path)[0]
+        gunzip(in_path, out_path)
 
     def download_files(self, links, out_path):
         """
@@ -33,12 +53,16 @@ class ClearinghouseRepository:
         for i, link in enumerate(links):
 
             try:
-                self.download_file(conn, link, out_path)
+                filepath = self.download_file(conn, link, out_path)
+                self.extract_files(filepath)
+
             except ConnectionError("Error in connection"):
                 conn = self.connection.start_connection()
                 continue
             except:
                 print("error in downloading, something else. will continue?")
+
+
 
 
 
