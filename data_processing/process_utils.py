@@ -28,6 +28,11 @@ def grouped_fill_na(df, grouper, method=None):
     return transformed
 
 
+def rounded_timestamp(df, name_current_ts='timestamp_', name_rounded_ts='timestamp_rounded', round_by='H'):
+    df[name_rounded_ts] = df[name_current_ts].dt.round(round_by)
+    return df
+
+
 def grouped_resample(df, grouper, sample_size, time_col):
 
     grouped = df.groupby(grouper).resample(sample_size, on=time_col).mean()
