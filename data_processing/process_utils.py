@@ -146,3 +146,27 @@ def calculate_longlat_distance(df1, df2, key_col):
         labels.append(df2[key_col].loc[idx])
 
     return labels
+
+
+def data_to_pandas(files, ext, columns, batch_size):
+
+    # send traffic metadata:
+    # get file paths:
+    file_paths = get_file_names(files, extension=ext)
+    print("Number of traffic files found: ", len(file_paths))
+
+    # extract and traffic data in batches:
+    no_data_cols = list(range(len(columns)))
+    for i in range(0, len(file_paths), batch_limit):
+    #for i in range(0, batch_limit, batch_limit):
+        df_batch = []
+        for f in file_paths[i:i + batch_limit]:
+            print("Processing file: ", f)
+            temp = pd.read_csv(f, header=None, names=traffic_data_columns, usecols=no_data_cols)
+            df_batch.append(temp)
+
+        df_extracted_traffic = pd.concat(df_batch, ignore_index=True)
+
+        df_extracted_traffic = df_extracted_traffic.drop('district', axis=1)
+
+        df_extracted_traffic = df_extracted_traffic.join(df_traffic_metadata, on='station')
