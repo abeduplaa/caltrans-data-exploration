@@ -50,10 +50,10 @@ table_name = "caltrans_historic_2015_2019"
 threshold = 0.1
 interest_col = 'speed'
 grouper = 'station'
-batch_limit = 3
+batch_limit = 100
 file_ext = '.txt'
-thread_num = 3
-DEBUG = True
+thread_num = 20
+DEBUG = False
 
 
 class TrafficData:
@@ -194,8 +194,8 @@ if __name__ == "__main__":
             threads.append(t)
             t.start()
 
-    for t in threads:
-        t.join()
+        for t in threads:
+            t.join()
 
 print("Exiting Main Thread")
 
