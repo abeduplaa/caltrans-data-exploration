@@ -44,16 +44,16 @@ def apply_custom_transformations(df, interest_col, threshold, grouper):
     return df
 
 
-table_name = "caltrans_historic_2015_2019"
+table_name = "test_2"
 
 # initial parameters for reading in traffic data
 threshold = 0.1
 interest_col = 'speed'
 grouper = 'station'
-batch_limit = 100
+batch_limit = 1
 file_ext = '.txt'
-thread_num = 20
-DEBUG = False
+thread_num = 1
+DEBUG = True
 
 
 class TrafficData:
@@ -96,7 +96,7 @@ class TrafficData:
         self.create_df()
 
     def read_meta(self):
-        self.metadata = (pd.read_csv(self.meta_file, sep=',', usecols=self.meta_columns)
+        self.metadata = (pd.read_csv(self.meta_file, sep=',',usecols=self.meta_columns)
                          .rename(str.lower, axis='columns')
                          .set_index('id'))
 
