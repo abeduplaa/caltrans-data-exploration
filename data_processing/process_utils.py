@@ -92,27 +92,40 @@ def add_day_of_week(df, timestamp_col):
     return df
 
 
-def apply_transformations(df, interest_col, threshold, grouper):
+def apply_custom_transformations(df, interest_col, threshold, grouper):
 
+    # drop nas
     df = grouped_drop_na(df, threshold, grouper=grouper, col=interest_col)
+
+    # lower all column names
 
     df = lower_col_names(df)
 
     df['state_pm'] = state_pm_to_numeric(df['state_pm'])
-
-    # df['station'] = start_from_0(df['station'])
-
+    # drop all rows with na in absolute postmarker field
     df = df.dropna(subset=['abs_pm'])
-
-    df = downcast_type(df)
-
-    df = downcast_int(df, ['lanes','county'])
 
     df['timestamp_'] = pd.to_datetime(df['timestamp_'], infer_datetime_format=True)
 
+    # add a rounded timestamp for grouping later on: (e.g. 12:46 --> 13:00)
+    df = rounded_timestamp(df=df, name_current_ts='timestamp_', name_rounded_ts='timestamp_rounded', round_by='H')
+
     df = add_day_of_week(df, 'timestamp_')
 
+    # add column with hour of day for each data point
+    df['hour_of_day'] = df['timestamp_'].dt.hour
+
+    # add column with day of year for each data point
+    df['day_of_year'] = df['timestamp_'].dt.dayofyear
+
+    # downcast all ints to save memory
+    df = downcast_int(df, ['station', 'freeway', 'total_flow', 'lanes', 'county'])
+
+    # downcast all floats to save memory
+    df = downcast_type(df)
+
     return df
+
 
 
 def get_file_names(csv_path, extension):
@@ -146,27 +159,3 @@ def calculate_longlat_distance(df1, df2, key_col):
         labels.append(df2[key_col].loc[idx])
 
     return labels
-
-
-def data_to_pandas(files, ext, columns, batch_size):
-
-    # send traffic metadata:
-    # get file paths:
-    file_paths = get_file_names(files, extension=ext)
-    print("Number of traffic files found: ", len(file_paths))
-
-    # extract and traffic data in batches:
-    no_data_cols = list(range(len(columns)))
-    for i in range(0, len(file_paths), batch_limit):
-    #for i in range(0, batch_limit, batch_limit):
-        df_batch = []
-        for f in file_paths[i:i + batch_limit]:
-            print("Processing file: ", f)
-            temp = pd.read_csv(f, header=None, names=traffic_data_columns, usecols=no_data_cols)
-            df_batch.append(temp)
-
-        df_extracted_traffic = pd.concat(df_batch, ignore_index=True)
-
-        df_extracted_traffic = df_extracted_traffic.drop('district', axis=1)
-
-        df_extracted_traffic = df_extracted_traffic.join(df_traffic_metadata, on='station')

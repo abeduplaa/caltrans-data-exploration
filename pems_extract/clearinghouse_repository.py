@@ -18,6 +18,7 @@ def gunzip(source_filepath, dest_filepath, block_size=65536):
                 d_file.write(block)
         d_file.write(block)
 
+
 class ClearinghouseRepository:
     def __init__(self, authorization):
         self.connection = Connector(authorization)
@@ -32,7 +33,6 @@ class ClearinghouseRepository:
         print("Written File: ", file_name)
 
         return out_path+file_name
-
 
     def download_html_file(self):
         print("not yet implmemented")
@@ -57,11 +57,11 @@ class ClearinghouseRepository:
                 filepath = self.download_file(conn, link, out_path)
                 self.extract_files(filepath)
 
-            except ConnectionError("Error in connection"):
+            except ConnectionError("Error in connection, will try to connect again"):
                 conn = self.connection.start_connection()
                 continue
-            except:
-                print("error in downloading, something else. will continue?")
+            # except:
+            #    print("error in downloading, something else. will continue?")
 
 
 

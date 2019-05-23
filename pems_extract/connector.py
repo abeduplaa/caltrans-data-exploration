@@ -23,7 +23,7 @@ class Connector:
         conn.post(self.url_base, data=self.connect_config)
 
         return conn
-        # returns handle to download things
+        # returns handle to download files from caltrans
 
     def _connection_error(self):
         pass
