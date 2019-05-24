@@ -41,3 +41,8 @@ Samples |
 Total Flow |
 Avg Occupancy |
 Avg Speed |
+
+## Pre-cleaned data on S3
+
+If you just want to analyze the data yourself without downloading and processing it, the dataset is located at:
+s3://mapd-cloud/DataSets/caltrans_2015_2019
