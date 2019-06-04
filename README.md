@@ -35,4 +35,10 @@ python process_traffic_data.py PATH/TO/CONFIG.INI
 With the data either provided from the S3 bucket or loaded by the user to OmniSci, you can now use the notebooks to try to predict traffic flow. Play around and try different architectures and models with the notebooks.
 
 
-Final note: The weather part will also be described in this README
+Final note: The weather part will also be described in this README later on.
+
+## Pre-cleaned data on S3
+
+If you just want to analyze the data yourself without downloading and processing it, the dataset is located at:
+s3://mapd-cloud/DataSets/caltrans_2015_2019
+
