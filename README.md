@@ -1,46 +1,40 @@
-OmniSciData exploration with Caltrans Data
+OmniSci Data exploration of Caltrans Data
 ==============================================
 
-**under progress**
+Note: Use python 3.6 and make sure to install the requirements. (`pip install -r requirements.txt`)
 
-Use python 3+
 
-At the moment, the following steps are needed to download the data:
-1. copy the html from the caltrans website for the year wanted and place in the html directory
+
+# 1. Downloading Caltrans Data
+
+At the moment, the following pre-steps are needed to download the data:
+1. copy the links from the caltrans website html for the year wanted and place the file in the html directory
 2. make sure the directories and login info in the config file is correct
 
-## to extract data from caltrans
-you'll need to first make sure everything is correct in the config.ini file.
+Once all the links have been placed in the proper place and config file is properly set, run the following command:
 
-Then run the command:
 ```
-python /bin/extract.py /path/to/your/config.ini/file
+python extract.py PATH/TO/CONFIG.INI
 ```
 
-## after extraction process the data by running
+This will save the caltrans text files to the directory specified in config.ini
+
+# 2. Processing and Loading Caltrans Data in to OmiSci
+
+(Make sure file directory is correct in config.ini file)
+
+To process and transform the downloaded text files, run process_traffic_data.py to transform and then load the data in to your OmniSci instance.
+
 ```
-python /bin/process.py /path/to/your/config.ini/file
+python process_traffic_data.py PATH/TO/CONFIG.INI
 ```
-In process.py, there are some parameters that can be adjusted
 
-___
+# 3. Jupyter notebooks
 
-Columns of importance from Caltrans:
+With the data either provided from the S3 bucket or loaded by the user to OmniSci, you can now use the notebooks to try to predict traffic flow. Play around and try different architectures and models with the notebooks.
 
-| Columns |
-| ------------- |
- Timestamp |
-Station |
-District |
-Freeway # |
-Direction of Travel | 
-Lane Type |
-Station Length |
-Samples |
-% Observed |
-Total Flow |
-Avg Occupancy |
-Avg Speed |
+
+Final note: The weather part will also be described in this README later on.
 
 ## Pre-cleaned data on S3
 

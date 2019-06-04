@@ -28,6 +28,11 @@ def grouped_fill_na(df, grouper, method=None):
     return transformed
 
 
+def rounded_timestamp(df, name_current_ts='timestamp_', name_rounded_ts='timestamp_rounded', round_by='H'):
+    df[name_rounded_ts] = df[name_current_ts].dt.round(round_by)
+    return df
+
+
 def grouped_resample(df, grouper, sample_size, time_col):
 
     grouped = df.groupby(grouper).resample(sample_size, on=time_col).mean()
@@ -87,27 +92,40 @@ def add_day_of_week(df, timestamp_col):
     return df
 
 
-def apply_transformations(df, interest_col, threshold, grouper):
+def apply_custom_transformations(df, interest_col, threshold, grouper):
 
+    # drop nas
     df = grouped_drop_na(df, threshold, grouper=grouper, col=interest_col)
+
+    # lower all column names
 
     df = lower_col_names(df)
 
     df['state_pm'] = state_pm_to_numeric(df['state_pm'])
-
-    # df['station'] = start_from_0(df['station'])
-
+    # drop all rows with na in absolute postmarker field
     df = df.dropna(subset=['abs_pm'])
-
-    df = downcast_type(df)
-
-    df = downcast_int(df, ['lanes','county'])
 
     df['timestamp_'] = pd.to_datetime(df['timestamp_'], infer_datetime_format=True)
 
+    # add a rounded timestamp for grouping later on: (e.g. 12:46 --> 13:00)
+    df = rounded_timestamp(df=df, name_current_ts='timestamp_', name_rounded_ts='timestamp_rounded', round_by='H')
+
     df = add_day_of_week(df, 'timestamp_')
 
+    # add column with hour of day for each data point
+    df['hour_of_day'] = df['timestamp_'].dt.hour
+
+    # add column with day of year for each data point
+    df['day_of_year'] = df['timestamp_'].dt.dayofyear
+
+    # downcast all ints to save memory
+    df = downcast_int(df, ['station', 'freeway', 'total_flow', 'lanes', 'county'])
+
+    # downcast all floats to save memory
+    df = downcast_type(df)
+
     return df
+
 
 
 def get_file_names(csv_path, extension):
