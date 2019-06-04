@@ -3,6 +3,12 @@ OmniSci Data exploration of Caltrans Data
 
 Note: Use python 3.6 and make sure to install the requirements. (`pip install -r requirements.txt`)
 
+## Pre-cleaned data on S3
+
+If you just want to analyze the data yourself without downloading and processing it, the dataset is located at:
+s3://mapd-cloud/DataSets/caltrans_2015_2019
+
+You can skip steps 1 and 2 if using S3 data
 
 
 # 1. Downloading Caltrans Data
@@ -36,7 +42,3 @@ With the data either provided from the S3 bucket or loaded by the user to OmniSc
 
 Final note: The weather part will also be described in this README later on.
 
-## Pre-cleaned data on S3
-
-If you just want to analyze the data yourself without downloading and processing it, the dataset is located at:
-s3://mapd-cloud/DataSets/caltrans_2015_2019
