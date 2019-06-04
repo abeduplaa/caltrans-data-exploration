@@ -1,6 +1,4 @@
 from tensorflow.python.keras.models import load_model
-
-
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.preprocessing import LabelEncoder
 import pandas as pd
@@ -82,14 +80,16 @@ def prepare_data_for_network(data, n_in=1, n_out=1, dropnan=True):
         agg.dropna(inplace=True)
     return agg
 
-def remove_cols(df):
+def remove_cols(df,var,n):
     
     cols = list(df.columns)
     drop_1 = [c for c in cols if '(t+' in c]
     drop_2 = [c for c in cols if '(t)' in c]
-
-    drop_1.remove('var2(t+5)')
-
+    
+    steps = n-1
+    col_to_keep = var + '(t+' + str(steps) + ')'
+    drop_1.remove(col_to_keep)
+    
     drop_cols = drop_1 + drop_2
     df = df.drop(drop_cols, axis=1)
     
@@ -135,3 +135,31 @@ def prepare_data(df):
     print(test_X.shape, test_y.shape)
     
     return test_X, test_y
+
+def split_data(data, t_r, v_r):
+    # define split
+    train_to_val = int(data.shape[0] * t_r)
+
+    val_to_test = train_to_val + int(data.shape[0] * v_r)
+
+    print("Size of training set:", train_to_val)
+    print("Size of Validation set:", val_to_test-train_to_val)
+    print("Size of Test set:", data.shape[0]-val_to_test)
+    
+    values = data.values
+    train = values[:train_to_val, :]
+    val = values[train_to_val:val_to_test, :]
+    test = values[val_to_test:, :]
+
+
+    # split into input and outputs
+    train_X, train_y = train[:, :-1], train[:, -1]
+    val_X, val_y = val[:, :-1], val[:, -1]
+    test_X, test_y = test[:, :-1], test[:, -1]
+
+    # reshape input to be 3D [samples, timesteps, features]
+    train_X = train_X.reshape((train_X.shape[0], 1, train_X.shape[1]))
+    val_X = val_X.reshape((val_X.shape[0], 1, val_X.shape[1]))
+    test_X = test_X.reshape((test_X.shape[0], 1, test_X.shape[1]))
+    
+    return train_X, train_y, val_X, val_y, test_X, test_y
