@@ -6,35 +6,36 @@ import data_processing.process_utils as utils
 from omnisci_connector.omni_connect import OmnisciConnect
 from noaa_weather_tool.noaa_api_v2 import NOAAData
 
-
 def apply_custom_transformations(df, interest_col, threshold, grouper):
 
+    # drop nas
     df = utils.grouped_drop_na(df, threshold, grouper=grouper, col=interest_col)
+
+    # lower all column names
 
     df = utils.lower_col_names(df)
 
     df['state_pm'] = utils.state_pm_to_numeric(df['state_pm'])
-
-    # df['station'] = start_from_0(df['station'])
-
+    # drop all rows with na in absolute postmarker field
     df = df.dropna(subset=['abs_pm'])
 
     df['timestamp_'] = pd.to_datetime(df['timestamp_'], infer_datetime_format=True)
 
-    df = utils.grouped_resample(df, ['station', 'direction'], '1H', 'timestamp_')
-
-    df = df.drop('station', axis=1)
-
-    df = df.reset_index()
+    # add a rounded timestamp for grouping later on: (e.g. 12:46 --> 13:00)
+    df = utils.rounded_timestamp(df=df, name_current_ts='timestamp_', name_rounded_ts='timestamp_rounded', round_by='H')
 
     df = utils.add_day_of_week(df, 'timestamp_')
 
+    # add column with hour of day for each data point
     df['hour_of_day'] = df['timestamp_'].dt.hour
 
-    df['day_of_year'] = df['timestamp_'].dt.dayofyear
+    # add column with day of year for each data point
+    df['day_of_year'] = df['timestamp w_'].dt.dayofyear
 
-    df = utils.downcast_int(df, ['station', 'freeway', 'samples', 'total_flow', 'lanes', 'county'])
+    # downcast all ints to save memory
+    df = utils.downcast_int(df, ['station', 'freeway', 'total_flow', 'lanes', 'county'])
 
+    # downcast all floats to save memory
     df = utils.downcast_type(df)
 
     return df

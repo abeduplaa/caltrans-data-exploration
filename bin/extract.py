@@ -1,5 +1,5 @@
 import sys
-from data_extraction.pems_extractor import PemsExtractor
+from pems_extract.pems_extractor import PemsExtractor
 
 
 if __name__ == "__main__":
