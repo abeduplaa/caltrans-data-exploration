@@ -2,6 +2,9 @@ import pandas as pd
 import numpy as np
 import os
 from geopy.distance import vincenty
+from ipywidgets import IntProgress
+from functools import partial
+import multiprocessing
 
 
 def grouped_drop_na(df, threshold, grouper, col):
@@ -145,7 +148,10 @@ def calculate_longlat_distance(df1, df2, key_col):
     df1 = df1.rename(str.lower, axis='columns')
     df2 = df2.rename(str.lower, axis='columns')
     labels = []
+    f = IntProgress(min=0, max=len(df1.index)) # instantiate the bar
+    display(f) # display the bar
     for i in df1.index:
+        f.value += 1 # signal to increment the progress bar
         for j in df2.index:
             temp_distance = vincenty((df1['latitude'].loc[i], df1['longitude'].loc[i]),
                                                     (df2['latitude'].loc[j], df2['longitude'].loc[j]))
@@ -159,3 +165,49 @@ def calculate_longlat_distance(df1, df2, key_col):
         labels.append(df2[key_col].loc[idx])
 
     return labels
+
+
+def calc_distances(df1, df2, zipped):
+    i = zipped[0]
+    results = zipped[1]
+    
+    df2 = df2.loc[ df2['direction'] == df1['direction'][i] ]
+    
+    for j in df2.index:
+        temp_distance = vincenty((df1['latitude'].loc[i], df1['longitude'].loc[i]),
+                                                (df2['latitude'].loc[j], df2['longitude'].loc[j]))
+
+        if j == df2.index[0]:
+            closest = temp_distance
+            idx = j
+        elif temp_distance < closest:
+            closest = temp_distance
+            idx = j
+
+    results[df1['location'].loc[i]] = df2['id'].loc[idx]
+
+
+
+def longlat_distance_parallel(df1, df2, key_col, num_processes=8):
+    """
+    Calculates the distance between two longitude and latitude dataframe columns
+    :param df1:
+    :param df2:
+    :param key_col: the column with the id
+    :return: list containing the id which is closest for each row of df1
+    """
+    df1 = df1.rename(str.lower, axis='columns')
+    df2 = df2.rename(str.lower, axis='columns')
+    
+    df1_index = list(df1.index)
+    labels = []
+       
+    manager = multiprocessing.Manager()
+    return_dict = manager.dict()
+    import itertools
+    with multiprocessing.Pool(processes=num_processes) as pool:
+        func = partial(calc_distances, df1, df2)
+        pool.map(func, zip(df1_index, itertools.repeat(return_dict) ) )
+    
+    return return_dict
+                 
