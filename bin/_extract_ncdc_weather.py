@@ -1,3 +1,13 @@
+# Do not use
+### TODO:
+# read in token from file
+# auto load data from NCDC
+
+
+
+import sys
+sys.path.append('./src')
+
 import pandas as pd
 from noaa_weather_tool.noaa_api_v2 import NOAAData
 
@@ -14,6 +24,7 @@ def using_reset_index(df):
 
 ncdc_data_path = '/Users/abrahamduplaa/Desktop/OmniSci/ncdc_data.csv'
 
+
 counties = ['Alameda County',
             'Contra Costa County',
             'Marin County',
@@ -29,11 +40,12 @@ counties = ['Alameda County',
 
 state = 'CA'
 
-n = NOAAData(token)
 
 startdate = '2019-01-01'
 enddate = '2019-02-20'
 dataset = 'LCD'
+
+n = NOAAData(token)
 
 locations = n.locations(datasetid='LCD',
                         locationcategoryid='CNTY',
