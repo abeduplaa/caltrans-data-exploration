@@ -1,13 +1,16 @@
-from darksky_weather_tool.Weather import Weather
-from darksky_weather_tool.City import City
-from configparser import ConfigParser
-from omnisci_connector.omni_connect import OmnisciConnect
-
 import datetime
 import sys
+sys.path.append('./src')
+
+from configparser import ConfigParser
+from darksky_weather_tool.Weather import Weather
+from darksky_weather_tool.City import City
+
+from omnisci_connector.omni_connect import OmnisciConnect
+from utils import locate_config
 
 
-#INPUTS:
+#############################INPUTS#############################
 city_name = 'San Francisco'
 state_name = 'California'
 
@@ -16,18 +19,17 @@ end_date = datetime.datetime(2019, 2, 18)
 
 to_omnisci = False
 
+
 if to_omnisci:
     table_name = "SanFrancisco_Weather_JanFeb"
+else:
+    csv_path = './data/darksky_weather.csv'
+################################################################
 
 
 if __name__ == "__main__":
 
-    if len(sys.argv) != 2:
-        print(len(sys.argv))
-        raise TypeError("ERROR: need to provide path to config file.")
-
-    config_path = sys.argv[1]
-
+    config_path = locate_config(sys.argv)
     config = ConfigParser()
     config.read(config_path)
 
@@ -47,3 +49,5 @@ if __name__ == "__main__":
                              method='infer',
                              create='infer')
         connection.close_connection()
+    else:
+        weather_forecast.to_csv(csv_path)
