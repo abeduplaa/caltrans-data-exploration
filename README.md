@@ -1,44 +1,35 @@
 OmniSci Data exploration of Caltrans Data
 ==============================================
 
-Note: Use python 3.6 and make sure to install the requirements. (`pip install -r requirements.txt`)
+Use python 3+ and install the requirements.
 
-## Pre-cleaned data on S3
-
-If you just want to analyze the data yourself without downloading and processing it, the dataset is located at:
-s3://mapd-cloud/DataSets/caltrans_2015_2019
-
-You can skip steps 1 and 2 if using S3 data
-
-
-# 1. Downloading Caltrans Data
-
-At the moment, the following pre-steps are needed to download the data:
-1. copy the links from the caltrans website html for the year wanted and place the file in the html directory
+At the moment, the following steps are needed to download the data:
+1. copy the links from the caltrans website for the year wanted and place in the html directory (if extraction is necessary)
 2. make sure the directories and login info in the config file is correct
 
-Once all the links have been placed in the proper place and config file is properly set, run the following command:
+## How to use:
 
-```
-python extract.py PATH/TO/CONFIG.INI
-```
+The best way to start is to go through the jupyter notebooks in this order (all notebooks can be found in notebooks/):
 
-This will save the caltrans text files to the directory specified in config.ini
+1. Extracting Data from Caltrans: Extract_Data.ipynb
+2. Playing/Transforming data from Caltrans and pulling weather data: Processing_Traffic_Weather.ipynb
+3. Try out some of the training and testing notebooks and/or make your own models!
 
-# 2. Processing and Loading Caltrans Data in to OmiSci
+___
 
-(Make sure file directory is correct in config.ini file)
+Columns of importance that are kept for the traffic data from Caltrans:
 
-To process and transform the downloaded text files, run process_traffic_data.py to transform and then load the data in to your OmniSci instance.
-
-```
-python process_traffic_data.py PATH/TO/CONFIG.INI
-```
-
-# 3. Jupyter notebooks
-
-With the data either provided from the S3 bucket or loaded by the user to OmniSci, you can now use the notebooks to try to predict traffic flow. Play around and try different architectures and models with the notebooks.
-
-
-Final note: The weather part will also be described in this README later on.
-
+| Columns |
+| ------------- |
+ Timestamp |
+Station |
+District |
+Freeway # |
+Direction of Travel | 
+Lane Type |
+Station Length |
+Samples |
+% Observed |
+Total Flow |
+Avg Occupancy |
+Avg Speed |
