@@ -1,14 +1,13 @@
 import sys
+sys.path.append('./src')
+
 from pems_extract.pems_extractor import PemsExtractor
+from utils import locate_config
 
 
 if __name__ == "__main__":
 
-    if len(sys.argv) != 2:
-        print(len(sys.argv))
-        raise TypeError("ERROR: need to provide path to config file.")
-
-    config_path = sys.argv[1]
+    config_path = locate_config(sys.argv)
 
     pems = PemsExtractor(config_path)
     links = pems.extract_links()

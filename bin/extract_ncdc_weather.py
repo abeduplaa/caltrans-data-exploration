@@ -12,10 +12,6 @@ def using_reset_index(df):
     return df.groupby('STATION').resample('60min').max()
 
 
-config_path = '/Users/abrahamduplaa/Desktop/OmniSci/Caltrans_Project/Caltrans_DataExploration/config.ini'
-
-token = "aZinIRhgmYGTYGZaUqGklUDAPwapZjff"
-
 ncdc_data_path = '/Users/abrahamduplaa/Desktop/OmniSci/ncdc_data.csv'
 
 counties = ['Alameda County',

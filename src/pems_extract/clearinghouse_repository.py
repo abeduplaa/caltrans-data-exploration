@@ -5,6 +5,7 @@
 import gzip
 import os
 from .connector import Connector
+from requests.exceptions import ConnectionError
 
 
 def gunzip(source_filepath, dest_filepath, block_size=65536):
@@ -57,11 +58,11 @@ class ClearinghouseRepository:
                 filepath = self.download_file(conn, link, out_path)
                 self.extract_files(filepath)
 
-            except ConnectionError("Error in connection, will try to connect again"):
+            except ConnectionError:
                 conn = self.connection.start_connection()
                 continue
-            # except:
-            #    print("error in downloading, something else. will continue?")
+        
+        conn.close()
 
 
 

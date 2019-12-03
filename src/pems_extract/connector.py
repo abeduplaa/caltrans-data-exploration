@@ -1,5 +1,5 @@
 #TODO: add error function and logging and output
-from requests import session, ConnectionError
+import requests 
 
 
 class Connector:
@@ -9,21 +9,17 @@ class Connector:
 
         self.url_base = url_base
         self.connect_config = login
-        self._test_connection()
+        self._test_login_auth()
 
-    def _test_connection(self):
-        # add tester to make sure connection worked.
-        pass
+    def _test_login_auth(self):
+        response = requests.post(self.url_base, data=self.connect_config)
+        if ("Incorrect username or password" in response.content.decode("utf-8")):
+            raise requests.ConnectionError("Incorrect username and password for caltrans PeMS")
 
     def start_connection(self):
 
         self.connect_config['action'] = 'login'
-        conn = session()
-
+        conn = requests.session()
         conn.post(self.url_base, data=self.connect_config)
-
         return conn
         # returns handle to download files from caltrans
-
-    def _connection_error(self):
-        pass

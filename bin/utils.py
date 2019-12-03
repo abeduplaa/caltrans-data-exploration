@@ -11,7 +11,6 @@ def _check_file(file, error=None):
 def locate_config(args):      
     if len(args) > 1:
         path = args[1]
-        print(path)
         error = "user provided config.ini file path not found (e.g., python /path/to/config.ini)"
     else:
         path = os.path.join(os.getcwd(),'config.ini')
