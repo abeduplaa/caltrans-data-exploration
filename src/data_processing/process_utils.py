@@ -2,7 +2,6 @@ import pandas as pd
 import numpy as np
 import os
 from geopy.distance import vincenty
-from ipywidgets import IntProgress
 from functools import partial
 import multiprocessing
 
@@ -148,10 +147,7 @@ def calculate_longlat_distance(df1, df2, key_col):
     df1 = df1.rename(str.lower, axis='columns')
     df2 = df2.rename(str.lower, axis='columns')
     labels = []
-    f = IntProgress(min=0, max=len(df1.index)) # instantiate the bar
-    display(f) # display the bar
     for i in df1.index:
-        f.value += 1 # signal to increment the progress bar
         for j in df2.index:
             temp_distance = vincenty((df1['latitude'].loc[i], df1['longitude'].loc[i]),
                                                     (df2['latitude'].loc[j], df2['longitude'].loc[j]))

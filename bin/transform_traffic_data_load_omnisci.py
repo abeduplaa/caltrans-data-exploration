@@ -1,5 +1,7 @@
-from configparser import ConfigParser
 import sys
+sys.path.append('./src')
+
+from configparser import ConfigParser
 import pandas as pd
 import threading
 import time
@@ -8,9 +10,11 @@ import data_processing.process_utils as utils
 from omnisci_connector.omni_connect import OmnisciConnect
 from data_processing.MetaData import MetaData
 from data_processing.TrafficData import TrafficData
+from utils import locate_config
 
+
+#############################INPUTS#############################
 table_name = "test_2"
-
 # initial parameters for reading in traffic data
 threshold = 0.01
 interest_col = 'speed'
@@ -19,6 +23,7 @@ batch_limit = 1
 file_ext = '.txt'
 thread_num = 1
 DEBUG = False
+################################################################
 
 
 def transform_and_load(config_path, paths, meta_path, thread):
@@ -62,12 +67,9 @@ def chunks(l, n):
 
 if __name__ == "__main__":
 
-    if len(sys.argv) != 2:
-        print(len(sys.argv))
-        raise TypeError("ERROR: need to provide path to config file.")
+    config_path = locate_config(sys.argv)
 
     # Configuration file reader
-    config_path = sys.argv[1]
     config = ConfigParser()
     config.read(config_path)
     print("Configuration file read.")
