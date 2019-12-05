@@ -1,35 +1,67 @@
-OmniSci Data exploration of Caltrans Data
+Analyzing San Francisco's traffic with python and OmniSci
 ==============================================
 
-Use python 3+ and install the requirements.
+Note: Follow the instructions step by step to extract the data from the sources. However, if you just want to try the notebooks, then go straight there (however, you'll still need to load data from somewhere).
 
-At the moment, the following steps are needed to download the data:
-1. copy the links from the caltrans website for the year wanted and place in the html directory (if extraction is necessary)
-2. make sure the directories and login info in the config file is correct
+## Table of Contents
+* [General Info] (#general-info)
+* [setup] (#setup)
+* [Extracting traffic data from Caltrans] (#extracting-traffic-data-from-caltrans)
+* [Extracting weather data from skylab] (#extracting-weather)
+* [Blog posts] (#blog-posts)
 
-## How to use:
+## General Info
+The state of California provides a an enormous database containing years of traffic sensor data. In this repo, there is code to:
+* Extract weather data from skylab
+* Extract traffic data from PeMS
+* Extract weather data from noaa
+* Transform and load data to OmniSci
 
-The best way to start is to go through the jupyter notebooks in this order (all notebooks can be found in notebooks/):
+**But, the best way to start is to go through the jupyter notebooks!**
 
-1. Extracting Data from Caltrans: Extract_Data.ipynb
-2. Playing/Transforming data from Caltrans and pulling weather data: Processing_Traffic_Weather.ipynb
-3. Try out some of the training and testing notebooks and/or make your own models!
+## Setup
+1. Preferably, use python 3.6
+2. Install the requirements in requirements.txt: `pip install -r requirements.txt`
+3. Create accounts at the appropriate places to be able to download the data.
+4. Fill in the fields in `config.ini`. The code reads critical information, such as your login to Caltrans  from this file. **You will not be able to extract data without creating a free account.**
+5. Download the correct html files with the appropriate links for data extraction (read below in [extracting traffic data...] (#extracting-traffic-data-from-caltrans))
 
-___
+Once everything is ready, you'll only need to run the files in `bin/` to extract data and load to OmniSci.
 
-Columns of importance that are kept for the traffic data from Caltrans:
+Order to run the files in:
 
-| Columns |
-| ------------- |
- Timestamp |
-Station |
-District |
-Freeway # |
-Direction of Travel | 
-Lane Type |
-Station Length |
-Samples |
-% Observed |
-Total Flow |
-Avg Occupancy |
-Avg Speed |
+1. `python bin/extract.py`
+2. `python bin/extract_darksky_weather.py`
+3. `python bin/transform_traffic_data_load_omnisci.py`
+
+##Extracting traffic data from Caltrans
+The data is provided by California Department of Transportation (CalTrans) and found in their Performance Measurement System (PeMS) database. 
+
+CalTrans collects data in realtime from around 40,000 sensors!
+
+To extract CalTrans traffic data, follow these steps:
+
+0. Follow the setup steps
+1. Set up the login info, paths, etc. in `config.ini`
+2. Go to CalTrans PeMS website (http://pems.dot.ca.gov/) and login. 
+3. Once in the website, navigate to the Data Clearinghouse (http://pems.dot.ca.gov/?dnode=Clearinghouse)
+4. The Data Clearinghouse has the data you need. Unfortunately, scrapy hasn't been implemented yet for this project, so you'll need to download the html for the desired Traffic data type and district from the website and place it in `./html_files/`. I've already placed some sample files in there. 
+5. You're ready to run: `python bin/extract.py`
+
+## Extracting Weather
+0. Follow the setup steps
+1. Set up the login info, paths, etc. in `config.ini`
+2. Create an API key at [darksky](https://darksky.net/dev) and add it to the `config.ini`. 
+3. Open `bin/extract_darksky_weather.py` and configure the location, dates, etc
+5. You're ready to run: `python bin/extract_darksky_weather.py `
+
+
+## Blog posts
+
+If you want to check out some of the insights we've found from the traffic data, you can read the blog posts here: 
+
+1. [Blog post 1](https://www.omnisci.com/blog/analyzing-historical-traffic-flow-in-real-time-with-omnisci)
+2. Blog post 2 on its way!
+3. Blog post 3 on its way!
+
+
