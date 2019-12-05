@@ -5,10 +5,11 @@ Note: Follow the instructions step by step to extract the data from the sources.
 
 ## Table of Contents
 
-* [General Info] (#general-info)
-* [setup] (#setup)
-* [Extracting traffic data from Caltrans] (#extracting-traffic-data-from-caltrans)
-* [Extracting weather] (#extracting-weather)
+
+* [General Info](#general-info)
+* [setup](#setup)
+* [Extracting traffic data from Caltrans](#extracting-traffic-data)
+* [Extracting weather](#extracting-weather)
 * [Blog posts] (#blog-posts)
 
 ## General Info
@@ -37,7 +38,7 @@ Order to run the files in:
 2. `python bin/extract_darksky_weather.py`
 3. `python bin/transform_traffic_data_load_omnisci.py`
 
-## Extracting traffic data from Caltrans
+## Extracting traffic data
 
 The data is provided by California Department of Transportation (CalTrans) and found in their Performance Measurement System (PeMS) database. 
 
