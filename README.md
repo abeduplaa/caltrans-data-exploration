@@ -7,7 +7,7 @@ Note: Follow the instructions step by step to extract the data from the sources.
 * [General Info] (#general-info)
 * [setup] (#setup)
 * [Extracting traffic data from Caltrans] (#extracting-traffic-data-from-caltrans)
-* [Extracting weather data from skylab] (#extracting-weather)
+* [Extracting weather] (#extracting-weather)
 * [Blog posts] (#blog-posts)
 
 ## General Info
@@ -55,6 +55,7 @@ To extract CalTrans traffic data, follow these steps:
 3. Open `bin/extract_darksky_weather.py` and configure the location, dates, etc
 5. You're ready to run: `python bin/extract_darksky_weather.py `
 
+**Note:** There is already data from NOAA included in `data/weather_noaa`. The script to download this data is also included but there are still some bugs.
 
 ## Blog posts
 
