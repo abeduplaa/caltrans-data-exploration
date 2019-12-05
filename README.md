@@ -46,7 +46,8 @@ To extract CalTrans traffic data, follow these steps:
 2. Go to CalTrans PeMS website (http://pems.dot.ca.gov/) and login. 
 3. Once in the website, navigate to the Data Clearinghouse (http://pems.dot.ca.gov/?dnode=Clearinghouse)
 4. The Data Clearinghouse has the data you need. Unfortunately, scrapy hasn't been implemented yet for this project, so you'll need to download the html for the desired Traffic data type and district from the website and place it in `./html_files/`. I've already placed some sample files in there. 
-5. You're ready to run: `python bin/extract.py`
+5. Also important! Make sure to download the meta files for your district. These are necessary as they contain meta data regarding the stations. When transforming/loading to OmniSci, the code will read all meta files in the folder and join them together. All meta files for district 04 from 2015 to 2019 can be found in `data/meta/`.
+6. You're ready to run: `python bin/extract.py`
 
 ## Extracting Weather
 0. Follow the setup steps
@@ -57,6 +58,24 @@ To extract CalTrans traffic data, follow these steps:
 
 **Note:** There is already data from NOAA included in `data/weather_noaa`. The script to download this data is also included but there are still some bugs.
 
+## Transforming and loading to OmniSci
+In order to load the data in, make sure to have OmniSci running and have put in your OmniSci credentials in `config.ini`.
+
+1. Make sure you have all the data correctly downloaded and ready.
+2. Open `transform_traffic_data_load_omnisci.py` and set the table name and other input parameters.
+2. Run `python bin/transform_traffic_data_load_omnisci.py`
+
+The data should now be in OmniSci and ready to visualize!
+
+## Notebooks
+
+The notebooks all require reading from OmniSci. Check them out to see how we created a model to: 
+
+1. forecast traffic: `notebooks/Train_Models.ipynb` and `Prediction.ipynb`
+2. Identify the severity of an accident: `notebooks/IncidentClassification.ipynb`
+
+Try them out and also try some new ideas with the data!
+
 ## Blog posts
 
 If you want to check out some of the insights we've found from the traffic data, you can read the blog posts here: 
@@ -65,4 +84,6 @@ If you want to check out some of the insights we've found from the traffic data,
 2. Blog post 2 on its way!
 3. Blog post 3 on its way!
 
+
+Feel free to contact me for any questions or to get in touch with OmniSci.
 
