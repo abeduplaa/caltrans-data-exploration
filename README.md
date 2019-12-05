@@ -4,6 +4,7 @@ Analyzing San Francisco's traffic with python and OmniSci
 Note: Follow the instructions step by step to extract the data from the sources. However, if you just want to try the notebooks, then go straight there (however, you'll still need to load data from somewhere).
 
 ## Table of Contents
+
 * [General Info] (#general-info)
 * [setup] (#setup)
 * [Extracting traffic data from Caltrans] (#extracting-traffic-data-from-caltrans)
@@ -11,6 +12,7 @@ Note: Follow the instructions step by step to extract the data from the sources.
 * [Blog posts] (#blog-posts)
 
 ## General Info
+
 The state of California provides a an enormous database containing years of traffic sensor data. In this repo, there is code to:
 * Extract weather data from skylab
 * Extract traffic data from PeMS
@@ -20,6 +22,7 @@ The state of California provides a an enormous database containing years of traf
 **But, the best way to start is to go through the jupyter notebooks!**
 
 ## Setup
+
 1. Preferably, use python 3.6
 2. Install the requirements in requirements.txt: `pip install -r requirements.txt`
 3. Create accounts at the appropriate places to be able to download the data.
@@ -34,7 +37,8 @@ Order to run the files in:
 2. `python bin/extract_darksky_weather.py`
 3. `python bin/transform_traffic_data_load_omnisci.py`
 
-##Extracting traffic data from Caltrans
+## Extracting traffic data from Caltrans
+
 The data is provided by California Department of Transportation (CalTrans) and found in their Performance Measurement System (PeMS) database. 
 
 CalTrans collects data in realtime from around 40,000 sensors!
@@ -50,6 +54,7 @@ To extract CalTrans traffic data, follow these steps:
 6. You're ready to run: `python bin/extract.py`
 
 ## Extracting Weather
+
 0. Follow the setup steps
 1. Set up the login info, paths, etc. in `config.ini`
 2. Create an API key at [darksky](https://darksky.net/dev) and add it to the `config.ini`. 
@@ -59,6 +64,7 @@ To extract CalTrans traffic data, follow these steps:
 **Note:** There is already data from NOAA included in `data/weather_noaa`. The script to download this data is also included but there are still some bugs.
 
 ## Transforming and loading to OmniSci
+
 In order to load the data in, make sure to have OmniSci running and have put in your OmniSci credentials in `config.ini`.
 
 1. Make sure you have all the data correctly downloaded and ready.
