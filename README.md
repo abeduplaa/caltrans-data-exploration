@@ -10,7 +10,7 @@ Note: Follow the instructions step by step to extract the data from the sources.
 * [setup](#setup)
 * [Extracting traffic data from Caltrans](#extracting-traffic-data)
 * [Extracting weather](#extracting-weather)
-* [Blog posts] (#blog-posts)
+* [Blog posts](#blog-posts)
 
 ## General Info
 
