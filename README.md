@@ -87,8 +87,8 @@ Try them out and also try some new ideas with the data!
 
 If you want to check out some of the insights we've found from the traffic data, you can read the blog posts here: 
 
-1. [Blog post 1](https://www.omnisci.com/blog/analyzing-historical-traffic-flow-in-real-time-with-omnisci)
-2. Blog post 2 on its way!
+1. [Analyzing historic traffic data](https://www.omnisci.com/blog/analyzing-historical-traffic-flow-in-real-time-with-omnisci)
+2. [Traffic weather and Incidents](https://www.omnisci.com/blog/traffic-weather-and-incidents-a-360-degree-view-of-california-commutes)
 3. Blog post 3 on its way!
 
 
