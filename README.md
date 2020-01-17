@@ -89,7 +89,7 @@ If you want to check out some of the insights we've found from the traffic data,
 
 1. [Analyzing historic traffic data](https://www.omnisci.com/blog/analyzing-historical-traffic-flow-in-real-time-with-omnisci)
 2. [Traffic weather and Incidents](https://www.omnisci.com/blog/traffic-weather-and-incidents-a-360-degree-view-of-california-commutes)
-3. Blog post 3 on its way!
+3. [Modeling Traffic Behavior](https://www.omnisci.com/blog/modeling-traffic-behavior-as-a-function-of-real-time-traffic-flow-and-weather)
 
 
 Feel free to contact me for any questions or to get in touch with OmniSci.
